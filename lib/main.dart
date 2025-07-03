@@ -29,7 +29,7 @@ class MyApp extends StatelessWidget {
         '/': (context) => const HomeScreen(),
         '/add': (context) => const AddInfoScreen(),
         '/quiz': (context) => const QuizScreen(),
-        '/view': (context) => const ViewSavedInfoScreen(), // أضف هذا السطر
+        '/view': (context) => const ViewSavedInfoScreen(),
       },
     );
   }

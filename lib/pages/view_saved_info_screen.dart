@@ -18,12 +18,15 @@ class _ViewSavedInfoScreenState extends State<ViewSavedInfoScreen> {
       context: context,
       builder:
           (context) => AlertDialog(
-            title: const Text('تأكيد الحذف'),
-            content: const Text('هل أنت متأكد أنك تريد حذف هذه المعلومة؟'),
+            title: const Text('تأكيد الحذف', textDirection: TextDirection.rtl),
+            content: const Text(
+              'هل أنت متأكد أنك تريد حذف هذه المعلومة؟',
+              textDirection: TextDirection.rtl,
+            ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('إلغاء'),
+                child: const Text('إلغاء', textDirection: TextDirection.rtl),
               ),
               ElevatedButton(
                 onPressed: () async {
@@ -32,7 +35,7 @@ class _ViewSavedInfoScreenState extends State<ViewSavedInfoScreen> {
                   Navigator.pop(context);
                   setState(() {});
                 },
-                child: const Text('حذف'),
+                child: const Text('حذف', textDirection: TextDirection.rtl),
               ),
             ],
           ),
@@ -44,64 +47,74 @@ class _ViewSavedInfoScreenState extends State<ViewSavedInfoScreen> {
     final answerController = TextEditingController(text: item.answer);
     File? updatedImage = item.imagePath != null ? File(item.imagePath!) : null;
 
-    void pickNewImage() async {
-      final picker = ImagePicker();
-      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-      if (pickedFile != null) {
-        setState(() {
-          updatedImage = File(pickedFile.path);
-        });
-      }
-    }
-
     showDialog(
       context: context,
       builder:
           (context) => StatefulBuilder(
             builder:
                 (context, setLocalState) => AlertDialog(
-                  title: const Text('تعديل المعلومة'),
-                  content: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      TextField(
-                        controller: questionController,
-                        decoration: const InputDecoration(labelText: 'السؤال'),
-                      ),
-                      TextField(
-                        controller: answerController,
-                        decoration: const InputDecoration(labelText: 'الإجابة'),
-                      ),
-                      const SizedBox(height: 10),
-                      updatedImage != null
-                          ? Image.file(
-                            updatedImage!,
-                            width: 80,
-                            height: 80,
-                            fit: BoxFit.cover,
-                          )
-                          : const Text('لا توجد صورة'),
-                      TextButton.icon(
-                        icon: const Icon(Icons.image),
-                        label: const Text('تغيير الصورة'),
-                        onPressed: () async {
-                          final picker = ImagePicker();
-                          final pickedFile = await picker.pickImage(
-                            source: ImageSource.gallery,
-                          );
-                          if (pickedFile != null) {
-                            setLocalState(() {
-                              updatedImage = File(pickedFile.path);
-                            });
-                          }
-                        },
-                      ),
-                    ],
+                  title: const Text(
+                    'تعديل المعلومة',
+                    textDirection: TextDirection.rtl,
+                  ),
+                  content: Directionality(
+                    textDirection: TextDirection.rtl,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        TextField(
+                          controller: questionController,
+                          decoration: const InputDecoration(
+                            labelText: 'السؤال',
+                            alignLabelWithHint: true,
+                          ),
+                          textDirection: TextDirection.rtl,
+                        ),
+                        TextField(
+                          controller: answerController,
+                          decoration: const InputDecoration(
+                            labelText: 'الإجابة',
+                            alignLabelWithHint: true,
+                          ),
+                          textDirection: TextDirection.rtl,
+                        ),
+                        const SizedBox(height: 10),
+                        updatedImage != null
+                            ? Image.file(
+                              updatedImage!,
+                              width: 80,
+                              height: 80,
+                              fit: BoxFit.cover,
+                            )
+                            : const Text(
+                              'لا توجد صورة',
+                              textDirection: TextDirection.rtl,
+                            ),
+                        TextButton.icon(
+                          icon: const Icon(Icons.image),
+                          label: const Text('تغيير الصورة'),
+                          onPressed: () async {
+                            final picker = ImagePicker();
+                            final pickedFile = await picker.pickImage(
+                              source: ImageSource.gallery,
+                            );
+                            if (pickedFile != null) {
+                              setLocalState(() {
+                                updatedImage = File(pickedFile.path);
+                              });
+                            }
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('إلغاء'),
+                      child: const Text(
+                        'إلغاء',
+                        textDirection: TextDirection.rtl,
+                      ),
                     ),
                     ElevatedButton(
                       onPressed: () {
@@ -112,7 +125,10 @@ class _ViewSavedInfoScreenState extends State<ViewSavedInfoScreen> {
                         Navigator.pop(context);
                         setState(() {});
                       },
-                      child: const Text('حفظ'),
+                      child: const Text(
+                        'حفظ',
+                        textDirection: TextDirection.rtl,
+                      ),
                     ),
                   ],
                 ),
@@ -126,56 +142,65 @@ class _ViewSavedInfoScreenState extends State<ViewSavedInfoScreen> {
     final items = memoryBox.toMap();
     final categories = items.values.map((e) => e.category).toSet().toList();
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('المعلومات المحفوظة')),
-      body:
-          categories.isEmpty
-              ? const Center(child: Text('لا توجد بيانات محفوظة'))
-              : ListView.builder(
-                itemCount: categories.length,
-                itemBuilder: (context, index) {
-                  final category = categories[index];
-                  final filteredItems =
-                      items.entries
-                          .where((entry) => entry.value.category == category)
-                          .toList();
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Scaffold(
+        appBar: AppBar(title: const Text('المعلومات المحفوظة')),
+        body:
+            categories.isEmpty
+                ? const Center(child: Text('لا توجد بيانات محفوظة'))
+                : ListView.builder(
+                  itemCount: categories.length,
+                  itemBuilder: (context, index) {
+                    final category = categories[index];
+                    final filteredItems =
+                        items.entries
+                            .where((entry) => entry.value.category == category)
+                            .toList();
 
-                  return ExpansionTile(
-                    title: Text(category),
-                    children:
-                        filteredItems.map((entry) {
-                          final key = entry.key;
-                          final item = entry.value;
-                          return ListTile(
-                            title: Text(item.question),
-                            subtitle: Text(item.answer),
-                            leading:
-                                item.imagePath != null
-                                    ? Image.file(
-                                      File(item.imagePath!),
-                                      width: 40,
-                                      height: 40,
-                                      fit: BoxFit.cover,
-                                    )
-                                    : const Icon(Icons.image_not_supported),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.edit),
-                                  onPressed: () => editItem(context, item),
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete),
-                                  onPressed: () => deleteItemConfirm(key),
-                                ),
-                              ],
-                            ),
-                          );
-                        }).toList(),
-                  );
-                },
-              ),
+                    return ExpansionTile(
+                      title: Text(category, textDirection: TextDirection.rtl),
+                      children:
+                          filteredItems.map((entry) {
+                            final key = entry.key;
+                            final item = entry.value;
+                            return ListTile(
+                              title: Text(
+                                item.question,
+                                textDirection: TextDirection.rtl,
+                              ),
+                              subtitle: Text(
+                                item.answer,
+                                textDirection: TextDirection.rtl,
+                              ),
+                              leading:
+                                  item.imagePath != null
+                                      ? Image.file(
+                                        File(item.imagePath!),
+                                        width: 40,
+                                        height: 40,
+                                        fit: BoxFit.cover,
+                                      )
+                                      : const Icon(Icons.image_not_supported),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.edit),
+                                    onPressed: () => editItem(context, item),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete),
+                                    onPressed: () => deleteItemConfirm(key),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }).toList(),
+                    );
+                  },
+                ),
+      ),
     );
   }
 }

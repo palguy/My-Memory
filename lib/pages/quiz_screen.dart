@@ -1,6 +1,6 @@
+// quiz_screen.dart
 import 'dart:math';
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import '../models/memory_item.dart';
@@ -51,37 +51,61 @@ class _QuizScreenState extends State<QuizScreen> {
   @override
   Widget build(BuildContext context) {
     if (_items.isEmpty) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('الاختبار')),
-        body: const Center(child: Text('لا توجد بيانات للاختبار.')),
+      return Directionality(
+        textDirection: TextDirection.rtl,
+        child: Scaffold(
+          appBar: AppBar(title: const Text('الاختبار')),
+          body: const Center(child: Text('لا توجد بيانات للاختبار.')),
+        ),
       );
     }
-    return Scaffold(
-      appBar: AppBar(title: const Text('الاختبار')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(_currentItem.question, style: const TextStyle(fontSize: 20)),
-            const SizedBox(height: 10),
-            if (_currentItem.imagePath != null)
-              Image.file(File(_currentItem.imagePath!), height: 150),
-            TextField(
-              controller: _answerController,
-              decoration: const InputDecoration(labelText: 'الإجابة'),
-            ),
-            const SizedBox(height: 10),
-            ElevatedButton(onPressed: _checkAnswer, child: const Text('تحقق')),
-            const SizedBox(height: 10),
-            Text(_feedback, style: const TextStyle(fontSize: 18)),
-            const Spacer(),
-            ElevatedButton.icon(
-              icon: const Icon(Icons.refresh),
-              label: const Text('سؤال آخر'),
-              onPressed: _loadRandomItem,
-            ),
-          ],
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Scaffold(
+        appBar: AppBar(title: const Text('الاختبار')),
+        body: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                _currentItem.question + '?',
+                style: const TextStyle(fontSize: 20, color: Colors.redAccent),
+                textAlign: TextAlign.right,
+              ),
+              const SizedBox(height: 16),
+              if (_currentItem.imagePath != null)
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Image.file(File(_currentItem.imagePath!), height: 150),
+                ),
+              TextField(
+                controller: _answerController,
+                textDirection: TextDirection.rtl,
+                decoration: const InputDecoration(
+                  labelText: 'الإجابة',
+                  alignLabelWithHint: true,
+                ),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _checkAnswer,
+                child: const Text('تحقق'),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                _feedback,
+                style: const TextStyle(fontSize: 18),
+                textAlign: TextAlign.right,
+              ),
+              const Spacer(),
+              ElevatedButton.icon(
+                icon: const Icon(Icons.refresh),
+                label: const Text('سؤال آخر'),
+                onPressed: _loadRandomItem,
+              ),
+            ],
+          ),
         ),
       ),
     );

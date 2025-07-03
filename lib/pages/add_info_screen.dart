@@ -63,18 +63,22 @@ class _AddInfoScreenState extends State<AddInfoScreen> {
       context: context,
       builder:
           (context) => AlertDialog(
-            title: const Text('إضافة تصنيف جديد'),
+            title: const Text(
+              'إضافة تصنيف جديد',
+              textDirection: TextDirection.rtl,
+            ),
             content: TextField(
               controller: newCategoryController,
               decoration: const InputDecoration(hintText: 'اسم التصنيف'),
+              textDirection: TextDirection.rtl,
             ),
             actions: [
               TextButton(
-                child: const Text('إلغاء'),
+                child: const Text('إلغاء', textDirection: TextDirection.rtl),
                 onPressed: () => Navigator.pop(context),
               ),
               ElevatedButton(
-                child: const Text('إضافة'),
+                child: const Text('إضافة', textDirection: TextDirection.rtl),
                 onPressed: () async {
                   final newCat = newCategoryController.text.trim();
                   final box = Hive.box<String>('categoriesBox');
@@ -95,67 +99,72 @@ class _AddInfoScreenState extends State<AddInfoScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('إضافة معلومة')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: DropdownButtonFormField<String>(
-                      decoration: const InputDecoration(
-                        labelText: 'اختر التصنيف',
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Scaffold(
+        appBar: AppBar(title: const Text('إضافة معلومة')),
+        body: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Form(
+            key: _formKey,
+            child: ListView(
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: DropdownButtonFormField<String>(
+                        decoration: const InputDecoration(
+                          labelText: 'اختر التصنيف',
+                        ),
+                        value: selectedCategory,
+                        items:
+                            _categories.map((String category) {
+                              return DropdownMenuItem<String>(
+                                value: category,
+                                child: Text(category),
+                              );
+                            }).toList(),
+                        onChanged: (newValue) {
+                          setState(() {
+                            selectedCategory = newValue;
+                          });
+                        },
+                        validator:
+                            (value) => value == null ? 'اختر تصنيفًا' : null,
                       ),
-                      value: selectedCategory,
-                      items:
-                          _categories.map((String category) {
-                            return DropdownMenuItem<String>(
-                              value: category,
-                              child: Text(category),
-                            );
-                          }).toList(),
-                      onChanged: (newValue) {
-                        setState(() {
-                          selectedCategory = newValue;
-                        });
-                      },
-                      validator:
-                          (value) => value == null ? 'اختر تصنيفًا' : null,
                     ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.add),
-                    tooltip: 'إضافة تصنيف جديد',
-                    onPressed: showAddCategoryDialog,
-                  ),
-                ],
-              ),
-              TextFormField(
-                controller: _questionController,
-                decoration: const InputDecoration(labelText: 'السؤال'),
-                validator: (value) => value!.isEmpty ? 'أدخل السؤال' : null,
-              ),
-              TextFormField(
-                controller: _answerController,
-                decoration: const InputDecoration(labelText: 'الإجابة'),
-                validator: (value) => value!.isEmpty ? 'أدخل الإجابة' : null,
-              ),
-              const SizedBox(height: 10),
-              _image != null
-                  ? Image.file(_image!, height: 150)
-                  : const SizedBox.shrink(),
-              TextButton.icon(
-                icon: const Icon(Icons.image),
-                label: const Text('اختيار صورة'),
-                onPressed: pickImage,
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(onPressed: saveData, child: const Text('حفظ')),
-            ],
+                    IconButton(
+                      icon: const Icon(Icons.add),
+                      tooltip: 'إضافة تصنيف جديد',
+                      onPressed: showAddCategoryDialog,
+                    ),
+                  ],
+                ),
+                TextFormField(
+                  controller: _questionController,
+                  decoration: const InputDecoration(labelText: 'السؤال'),
+                  textDirection: TextDirection.rtl,
+                  validator: (value) => value!.isEmpty ? 'أدخل السؤال' : null,
+                ),
+                TextFormField(
+                  controller: _answerController,
+                  decoration: const InputDecoration(labelText: 'الإجابة'),
+                  textDirection: TextDirection.rtl,
+                  validator: (value) => value!.isEmpty ? 'أدخل الإجابة' : null,
+                ),
+                const SizedBox(height: 10),
+                _image != null
+                    ? Image.file(_image!, height: 150)
+                    : const SizedBox.shrink(),
+                TextButton.icon(
+                  icon: const Icon(Icons.image),
+                  label: const Text('اختيار صورة'),
+                  onPressed: pickImage,
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton(onPressed: saveData, child: const Text('حفظ')),
+              ],
+            ),
           ),
         ),
       ),
