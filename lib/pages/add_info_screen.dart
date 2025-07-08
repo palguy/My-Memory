@@ -120,6 +120,7 @@ class _AddInfoScreenState extends State<AddInfoScreen> {
                         items:
                             _categories.map((String category) {
                               return DropdownMenuItem<String>(
+                                alignment: AlignmentDirectional.centerEnd,
                                 value: category,
                                 child: Text(category),
                               );

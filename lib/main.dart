@@ -34,3 +34,15 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
+
+/*  TODO: 
+خيارات متعددة للاجابة بدل ادخال نص كتابي
+تصميم عصري	flutter_hooks + animations
+دعم النسخ الاحتياطي على Google Drive أو iCloud.
+
+
+
+
+
+*/

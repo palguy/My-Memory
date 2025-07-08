@@ -15,7 +15,7 @@ class QuizScreen extends StatefulWidget {
 class _QuizScreenState extends State<QuizScreen> {
   late List<MemoryItem> _items;
   late MemoryItem _currentItem;
-  final _answerController = TextEditingController();
+  late List<String> _options;
   String _feedback = '';
 
   @override
@@ -31,19 +31,30 @@ class _QuizScreenState extends State<QuizScreen> {
       final random = Random();
       setState(() {
         _currentItem = _items[random.nextInt(_items.length)];
+        _options = _generateOptions(_currentItem);
         _feedback = '';
-        _answerController.clear();
       });
     }
   }
 
-  void _checkAnswer() {
-    final userAnswer = _answerController.text.trim();
+  List<String> _generateOptions(MemoryItem correctItem) {
+    final random = Random();
+    final answers = <String>{correctItem.answer};
+    while (answers.length < 4 && answers.length < _items.length) {
+      final randomItem = _items[random.nextInt(_items.length)];
+      answers.add(randomItem.answer);
+    }
+    final options = answers.toList();
+    options.shuffle();
+    return options;
+  }
+
+  void _checkAnswer(String selectedAnswer) {
     setState(() {
-      if (userAnswer.toLowerCase() == _currentItem.answer.toLowerCase()) {
+      if (selectedAnswer == _currentItem.answer) {
         _feedback = '✅ صحيح!';
       } else {
-        _feedback = '❌ خطأ. الإجابة الصحيحة: ${_currentItem.answer}';
+        _feedback = '❌ خطأ. الإجابة الصحيحة: \n${_currentItem.answer}';
       }
     });
   }
@@ -59,6 +70,7 @@ class _QuizScreenState extends State<QuizScreen> {
         ),
       );
     }
+
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
@@ -66,31 +78,37 @@ class _QuizScreenState extends State<QuizScreen> {
         body: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
-                _currentItem.question + '?',
-                style: const TextStyle(fontSize: 20, color: Colors.redAccent),
-                textAlign: TextAlign.right,
+                _currentItem.question,
+                style: const TextStyle(fontSize: 25),
+                textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 10),
               if (_currentItem.imagePath != null)
                 Align(
                   alignment: Alignment.centerRight,
                   child: Image.file(File(_currentItem.imagePath!), height: 150),
                 ),
-              TextField(
-                controller: _answerController,
-                textDirection: TextDirection.rtl,
-                decoration: const InputDecoration(
-                  labelText: 'الإجابة',
-                  alignLabelWithHint: true,
-                ),
-              ),
               const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _checkAnswer,
-                child: const Text('تحقق'),
+              ..._options.map(
+                (option) => Container(
+                  width: double.infinity,
+                  margin: const EdgeInsets.symmetric(vertical: 5),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      backgroundColor: Colors.blue,
+                    ),
+                    onPressed: () => _checkAnswer(option),
+                    child: Text(
+                      option,
+                      style: TextStyle(color: Colors.black),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
               ),
               const SizedBox(height: 10),
               Text(
