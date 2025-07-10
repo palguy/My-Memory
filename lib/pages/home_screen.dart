@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:my_memory/models/backup_to_drive.dart';
+import 'package:my_memory/models/restore_from_drive.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -38,73 +40,66 @@ class HomeScreen extends StatelessWidget {
         backgroundColor: Colors.grey[900],
         child: Column(
           children: [
-            // logo
-            // DrawerHeader(child: Image.asset('lib/images/my_memory.png')),
             DrawerHeader(
-              decoration: const BoxDecoration(
-                color:
-                    Colors.transparent, // اختياري: لو حابب تبقي الخلفية شفافة
-              ),
-              child: Container(
-                width: double.infinity,
-                height: double.infinity,
-                child: Image.asset(
-                  'lib/images/my_memory_nav.png',
-                  fit: BoxFit.cover, // لتملأ الصورة كامل المساحة
-                ),
+              child: Image.asset(
+                'lib/images/my_memory_nav.png',
+                fit: BoxFit.cover,
               ),
             ),
-
-            // other pages
-            Padding(
-              padding: const EdgeInsets.only(left: 25),
-              child: ListTile(
-                leading: Icon(Icons.home, color: Colors.white),
-                title: Text(
-                  'Home',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+            ListTile(
+              leading: const Icon(Icons.home, color: Colors.white),
+              title: const Text(
+                'الرئيسية',
+                style: TextStyle(color: Colors.white),
               ),
+              onTap: () => Navigator.pop(context),
             ),
-
-            Padding(
-              padding: const EdgeInsets.only(left: 25),
-              child: ListTile(
-                leading: Icon(Icons.info, color: Colors.white),
-                title: Text(
-                  'About',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+            ListTile(
+              leading: const Icon(Icons.backup, color: Colors.white),
+              title: const Text(
+                'نسخة احتياطية على Drive',
+                style: TextStyle(color: Colors.white),
               ),
+              onTap: () async {
+                Navigator.pop(context);
+                final backupHelper = BackupHelper();
+                await backupHelper.backupToDrive();
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('تم النسخ الاحتياطي بنجاح')),
+                  );
+                }
+              },
             ),
-
-            // Expanded ليدفع الـ Logout لأسفل
-            Expanded(child: Container()),
-
-            // Logout في الأسفل
+            ListTile(
+              leading: const Icon(Icons.restore, color: Colors.white),
+              title: const Text(
+                'استعادة من Drive',
+                style: TextStyle(color: Colors.white),
+              ),
+              onTap: () async {
+                Navigator.pop(context);
+                final restoreHelper = RestoreHelper();
+                await restoreHelper.restoreFromDrive();
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('تمت الاستعادة من النسخة الاحتياطية'),
+                    ),
+                  );
+                }
+              },
+            ),
+            const Spacer(),
             Padding(
               padding: const EdgeInsets.only(left: 25, bottom: 25),
               child: ListTile(
-                leading: Icon(Icons.logout, color: Colors.white),
-                title: Text(
-                  'Logout',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
+                leading: const Icon(Icons.logout, color: Colors.white),
+                title: const Text(
+                  'تسجيل الخروج',
+                  style: TextStyle(color: Colors.white),
                 ),
-                onTap: () {
-                  // Add logout functionality here
-                },
+                onTap: () {},
               ),
             ),
           ],

@@ -79,6 +79,7 @@ class _QuizScreenState extends State<QuizScreen> {
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
                 _currentItem.question,
@@ -88,7 +89,7 @@ class _QuizScreenState extends State<QuizScreen> {
               const SizedBox(height: 10),
               if (_currentItem.imagePath != null)
                 Align(
-                  alignment: Alignment.centerRight,
+                  alignment: Alignment.center,
                   child: Image.file(File(_currentItem.imagePath!), height: 150),
                 ),
               const SizedBox(height: 20),
@@ -104,7 +105,7 @@ class _QuizScreenState extends State<QuizScreen> {
                     onPressed: () => _checkAnswer(option),
                     child: Text(
                       option,
-                      style: TextStyle(color: Colors.black),
+                      style: TextStyle(color: Colors.white),
                       textAlign: TextAlign.center,
                     ),
                   ),

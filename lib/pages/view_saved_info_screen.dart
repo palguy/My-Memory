@@ -1,4 +1,3 @@
-// screens/view_saved_info_screen.dart
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
@@ -66,7 +65,6 @@ class _ViewSavedInfoScreenState extends State<ViewSavedInfoScreen> {
                           controller: questionController,
                           decoration: const InputDecoration(
                             labelText: 'السؤال',
-                            alignLabelWithHint: true,
                           ),
                           textDirection: TextDirection.rtl,
                         ),
@@ -74,7 +72,6 @@ class _ViewSavedInfoScreenState extends State<ViewSavedInfoScreen> {
                           controller: answerController,
                           decoration: const InputDecoration(
                             labelText: 'الإجابة',
-                            alignLabelWithHint: true,
                           ),
                           textDirection: TextDirection.rtl,
                         ),
@@ -159,41 +156,52 @@ class _ViewSavedInfoScreenState extends State<ViewSavedInfoScreen> {
                             .toList();
 
                     return ExpansionTile(
-                      title: Text(category, textDirection: TextDirection.rtl),
+                      title: Text(category),
                       children:
                           filteredItems.map((entry) {
                             final key = entry.key;
                             final item = entry.value;
-                            return ListTile(
-                              title: Text(
-                                item.question,
-                                textDirection: TextDirection.rtl,
+                            return Card(
+                              margin: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 5,
                               ),
-                              subtitle: Text(
-                                item.answer,
-                                textDirection: TextDirection.rtl,
-                              ),
-                              leading:
-                                  item.imagePath != null
-                                      ? Image.file(
-                                        File(item.imagePath!),
-                                        width: 40,
-                                        height: 40,
-                                        fit: BoxFit.cover,
-                                      )
-                                      : const Icon(Icons.image_not_supported),
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  IconButton(
-                                    icon: const Icon(Icons.edit),
-                                    onPressed: () => editItem(context, item),
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.delete),
-                                    onPressed: () => deleteItemConfirm(key),
-                                  ),
-                                ],
+                              child: ListTile(
+                                title: Text(item.question),
+                                subtitle: Text(item.answer),
+                                leading:
+                                    item.imagePath != null
+                                        ? SizedBox(
+                                          width: 50,
+                                          height: 50,
+                                          child: ClipRRect(
+                                            borderRadius: BorderRadius.circular(
+                                              6,
+                                            ),
+                                            child: Image.file(
+                                              File(item.imagePath!),
+                                              fit: BoxFit.cover,
+                                            ),
+                                          ),
+                                        )
+                                        : const Icon(
+                                          Icons.image_not_supported,
+                                          size: 40,
+                                        ),
+
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.edit),
+                                      onPressed: () => editItem(context, item),
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.delete),
+                                      onPressed: () => deleteItemConfirm(key),
+                                    ),
+                                  ],
+                                ),
                               ),
                             );
                           }).toList(),
