@@ -18,12 +18,34 @@ class _QuizScreenState extends State<QuizScreen> {
   late List<String> _options;
   String _feedback = '';
 
+  late List<MemoryItem> _shuffledItems;
+  int _currentIndex = 0;
+
+  void _loadNextItem() {
+    if (_shuffledItems.isEmpty) return;
+
+    setState(() {
+      _currentItem = _shuffledItems[_currentIndex];
+      _options = _generateOptions(_currentItem);
+      _feedback = '';
+
+      _currentIndex++;
+      if (_currentIndex >= _shuffledItems.length) {
+        _currentIndex = 0;
+        _shuffledItems.shuffle(); // إعادة ترتيب القائمة عند الانتهاء
+      }
+    });
+  }
+
   @override
   void initState() {
     super.initState();
     final box = Hive.box<MemoryItem>('memoryBox');
     _items = box.values.toList();
-    _loadRandomItem();
+
+    _shuffledItems = List<MemoryItem>.from(_items)..shuffle();
+    _currentIndex = 0;
+    _loadNextItem();
   }
 
   void _loadRandomItem() {
@@ -121,7 +143,7 @@ class _QuizScreenState extends State<QuizScreen> {
               ElevatedButton.icon(
                 icon: const Icon(Icons.refresh),
                 label: const Text('سؤال آخر'),
-                onPressed: _loadRandomItem,
+                onPressed: _loadNextItem,
               ),
             ],
           ),

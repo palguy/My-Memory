@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:my_memory/pages/image_preview_screen.dart';
 import '../models/memory_item.dart';
 
 class ViewSavedInfoScreen extends StatefulWidget {
@@ -170,17 +171,32 @@ class _ViewSavedInfoScreenState extends State<ViewSavedInfoScreen> {
                                 title: Text(item.question),
                                 subtitle: Text(item.answer),
                                 leading:
-                                    item.imagePath != null
-                                        ? SizedBox(
-                                          width: 50,
-                                          height: 50,
-                                          child: ClipRRect(
-                                            borderRadius: BorderRadius.circular(
-                                              6,
-                                            ),
-                                            child: Image.file(
-                                              File(item.imagePath!),
-                                              fit: BoxFit.cover,
+                                    (item.imagePath != null &&
+                                            File(item.imagePath!).existsSync())
+                                        ? GestureDetector(
+                                          onTap: () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder:
+                                                    (context) =>
+                                                        ImagePreviewScreen(
+                                                          imagePath:
+                                                              item.imagePath!,
+                                                        ),
+                                              ),
+                                            );
+                                          },
+                                          child: SizedBox(
+                                            width: 50,
+                                            height: 50,
+                                            child: ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(6),
+                                              child: Image.file(
+                                                File(item.imagePath!),
+                                                fit: BoxFit.cover,
+                                              ),
                                             ),
                                           ),
                                         )
