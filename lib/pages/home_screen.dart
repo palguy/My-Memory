@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:my_memory/models/backup_to_drive.dart';
 import 'package:my_memory/models/restore_from_drive.dart';
+import 'package:my_memory/pages/import_json_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -41,11 +42,15 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           children: [
             DrawerHeader(
-              child: Image.asset(
-                'lib/images/my_memory_nav.png',
-                fit: BoxFit.cover,
+              child: CircleAvatar(
+                radius: 100,
+                backgroundImage: AssetImage(
+                  'assets/images/my_memory.png',
+                  //fit: BoxFit.cover,
+                ),
               ),
             ),
+            SizedBox(height: 25),
             ListTile(
               leading: const Icon(Icons.home, color: Colors.white),
               title: const Text(
@@ -57,7 +62,7 @@ class HomeScreen extends StatelessWidget {
             ListTile(
               leading: const Icon(Icons.backup, color: Colors.white),
               title: const Text(
-                'نسخة احتياطية على Drive',
+                'نسخة احتياطية Drive',
                 style: TextStyle(color: Colors.white),
               ),
               onTap: () async {
@@ -88,6 +93,22 @@ class HomeScreen extends StatelessWidget {
                     ),
                   );
                 }
+              },
+            ),
+
+            ListTile(
+              leading: const Icon(Icons.file_upload, color: Colors.white),
+              title: const Text(
+                'استيراد ملف JSON',
+                style: TextStyle(color: Colors.white),
+              ),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ImportJsonScreen(),
+                  ),
+                );
               },
             ),
             const Spacer(),

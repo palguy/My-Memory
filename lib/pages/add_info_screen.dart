@@ -69,7 +69,10 @@ class _AddInfoScreenState extends State<AddInfoScreen> {
             ),
             content: TextField(
               controller: newCategoryController,
-              decoration: const InputDecoration(hintText: 'اسم التصنيف'),
+              decoration: const InputDecoration(
+                hintText: 'اسم التصنيف',
+                hintTextDirection: TextDirection.rtl,
+              ),
               textDirection: TextDirection.rtl,
             ),
             actions: [

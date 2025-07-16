@@ -31,9 +31,24 @@ class _ViewSavedInfoScreenState extends State<ViewSavedInfoScreen> {
               ElevatedButton(
                 onPressed: () async {
                   final box = Hive.box<MemoryItem>('memoryBox');
+                  // Get the item before deleting to remove its image file
+                  final itemToDelete = box.get(key);
+                  if (itemToDelete != null && itemToDelete.imagePath != null) {
+                    final file = File(itemToDelete.imagePath!);
+                    if (await file.exists()) {
+                      try {
+                        await file.delete();
+                        debugPrint(
+                          'Deleted image file: ${itemToDelete.imagePath}',
+                        );
+                      } catch (e) {
+                        debugPrint('Error deleting image file: $e');
+                      }
+                    }
+                  }
                   await box.delete(key);
                   Navigator.pop(context);
-                  setState(() {});
+                  setState(() {}); // Rebuild to reflect changes
                 },
                 child: const Text('حذف', textDirection: TextDirection.rtl),
               ),
@@ -45,7 +60,8 @@ class _ViewSavedInfoScreenState extends State<ViewSavedInfoScreen> {
   void editItem(BuildContext context, MemoryItem item) async {
     final questionController = TextEditingController(text: item.question);
     final answerController = TextEditingController(text: item.answer);
-    File? updatedImage = item.imagePath != null ? File(item.imagePath!) : null;
+    File? updatedImageFile =
+        item.imagePath != null ? File(item.imagePath!) : null;
 
     showDialog(
       context: context,
@@ -77,17 +93,20 @@ class _ViewSavedInfoScreenState extends State<ViewSavedInfoScreen> {
                           textDirection: TextDirection.rtl,
                         ),
                         const SizedBox(height: 10),
-                        updatedImage != null
-                            ? Image.file(
-                              updatedImage!,
-                              width: 80,
-                              height: 80,
-                              fit: BoxFit.cover,
-                            )
-                            : const Text(
-                              'لا توجد صورة',
-                              textDirection: TextDirection.rtl,
-                            ),
+                        // Display the current or newly selected image
+                        if (updatedImageFile != null &&
+                            updatedImageFile!.existsSync())
+                          Image.file(
+                            updatedImageFile!,
+                            width: 80,
+                            height: 80,
+                            fit: BoxFit.cover,
+                          )
+                        else
+                          const Text(
+                            'لا توجد صورة',
+                            textDirection: TextDirection.rtl,
+                          ),
                         TextButton.icon(
                           icon: const Icon(Icons.image),
                           label: const Text('تغيير الصورة'),
@@ -98,11 +117,22 @@ class _ViewSavedInfoScreenState extends State<ViewSavedInfoScreen> {
                             );
                             if (pickedFile != null) {
                               setLocalState(() {
-                                updatedImage = File(pickedFile.path);
+                                updatedImageFile = File(pickedFile.path);
                               });
                             }
                           },
                         ),
+                        // Optional: Button to remove image
+                        if (updatedImageFile != null)
+                          TextButton.icon(
+                            icon: const Icon(Icons.clear),
+                            label: const Text('إزالة الصورة'),
+                            onPressed: () {
+                              setLocalState(() {
+                                updatedImageFile = null;
+                              });
+                            },
+                          ),
                       ],
                     ),
                   ),
@@ -116,12 +146,31 @@ class _ViewSavedInfoScreenState extends State<ViewSavedInfoScreen> {
                     ),
                     ElevatedButton(
                       onPressed: () {
+                        // Handle deletion of old image file if a new one is selected or cleared
+                        if (item.imagePath != null &&
+                            updatedImageFile?.path != item.imagePath) {
+                          final oldFile = File(item.imagePath!);
+                          if (oldFile.existsSync()) {
+                            try {
+                              oldFile
+                                  .deleteSync(); // Use sync delete for simplicity in dialog
+                              debugPrint(
+                                'Deleted old image file: ${item.imagePath}',
+                              );
+                            } catch (e) {
+                              debugPrint('Error deleting old image file: $e');
+                            }
+                          }
+                        }
+
                         item.question = questionController.text;
                         item.answer = answerController.text;
-                        item.imagePath = updatedImage?.path;
-                        item.save();
+                        item.imagePath =
+                            updatedImageFile?.path; // Save new path or null
+                        item.save(); // Save changes to Hive
+
                         Navigator.pop(context);
-                        setState(() {});
+                        setState(() {}); // Rebuild to reflect changes
                       },
                       child: const Text(
                         'حفظ',
@@ -157,6 +206,9 @@ class _ViewSavedInfoScreenState extends State<ViewSavedInfoScreen> {
                             .toList();
 
                     return ExpansionTile(
+                      key: ValueKey(
+                        category,
+                      ), // Add a key to the ExpansionTile as well
                       title: Text(category),
                       children:
                           filteredItems.map((entry) {
@@ -167,7 +219,11 @@ class _ViewSavedInfoScreenState extends State<ViewSavedInfoScreen> {
                                 horizontal: 10,
                                 vertical: 5,
                               ),
+                              // Add a unique key to the ListTile
                               child: ListTile(
+                                key: ValueKey(
+                                  key,
+                                ), // <--- THIS IS THE KEY CHANGE
                                 title: Text(item.question),
                                 subtitle: Text(item.answer),
                                 leading:
@@ -196,6 +252,17 @@ class _ViewSavedInfoScreenState extends State<ViewSavedInfoScreen> {
                                               child: Image.file(
                                                 File(item.imagePath!),
                                                 fit: BoxFit.cover,
+                                                // Optional: Add a key to Image.file for extra robustness
+                                                // key: ValueKey(item.imagePath!),
+                                                errorBuilder:
+                                                    (
+                                                      context,
+                                                      error,
+                                                      stackTrace,
+                                                    ) => const Icon(
+                                                      Icons.broken_image,
+                                                      size: 50,
+                                                    ),
                                               ),
                                             ),
                                           ),
@@ -204,7 +271,6 @@ class _ViewSavedInfoScreenState extends State<ViewSavedInfoScreen> {
                                           Icons.image_not_supported,
                                           size: 40,
                                         ),
-
                                 trailing: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [

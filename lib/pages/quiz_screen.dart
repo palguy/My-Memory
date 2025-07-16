@@ -48,16 +48,16 @@ class _QuizScreenState extends State<QuizScreen> {
     _loadNextItem();
   }
 
-  void _loadRandomItem() {
-    if (_items.isNotEmpty) {
-      final random = Random();
-      setState(() {
-        _currentItem = _items[random.nextInt(_items.length)];
-        _options = _generateOptions(_currentItem);
-        _feedback = '';
-      });
-    }
-  }
+  // void _loadRandomItem() {
+  //   if (_items.isNotEmpty) {
+  //     final random = Random();
+  //     setState(() {
+  //       _currentItem = _items[random.nextInt(_items.length)];
+  //       _options = _generateOptions(_currentItem);
+  //       _feedback = '';
+  //     });
+  //   }
+  // }
 
   List<String> _generateOptions(MemoryItem correctItem) {
     final random = Random();
