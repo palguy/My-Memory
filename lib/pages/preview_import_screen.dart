@@ -22,13 +22,61 @@ class PreviewImportScreen extends StatefulWidget {
 
 class _PreviewImportScreenState extends State<PreviewImportScreen> {
   bool _isImporting = false;
+  // This list will hold the preview data and will be updated as images are downloaded
   late List<Map<String, dynamic>> _previewItems;
-  final Uuid _uuid = const Uuid(); // Initialize Uuid
+  final Uuid _uuid = const Uuid();
+
+  // A list to track the download status for each image
+  // Values: 0 = not started, 1 = downloading, 2 = downloaded, -1 = error/no image
+  late List<int> _imageDownloadStatus;
 
   @override
   void initState() {
     super.initState();
     _previewItems = List.from(widget.items);
+    // Initialize download status for each item
+    _imageDownloadStatus = List.generate(
+      widget.items.length,
+      (index) =>
+          (widget.items[index]['imageUrl'] != null &&
+                  widget.items[index]['imageUrl'].toString().startsWith('http'))
+              ? 0 // Needs download
+              : -1, // No image or local, no download needed
+    );
+
+    // Start downloading images as soon as the screen loads for preview
+    _startImageDownloads();
+  }
+
+  // Function to start downloading images for preview
+  void _startImageDownloads() async {
+    for (int i = 0; i < _previewItems.length; i++) {
+      if (_imageDownloadStatus[i] == 0) {
+        // Only download if status is 'not started'
+        final item = _previewItems[i];
+        final imageUrl = item['imageUrl'];
+
+        if (imageUrl != null && imageUrl.toString().startsWith('http')) {
+          setState(() {
+            _imageDownloadStatus[i] = 1; // Set status to 'downloading'
+          });
+
+          final imagePath = await _downloadImage(imageUrl);
+
+          if (mounted) {
+            setState(() {
+              if (imagePath != null) {
+                _previewItems[i]['imagePath'] =
+                    imagePath; // Update with local path
+                _imageDownloadStatus[i] = 2; // Set status to 'downloaded'
+              } else {
+                _imageDownloadStatus[i] = -1; // Set status to 'error'
+              }
+            });
+          }
+        }
+      }
+    }
   }
 
   Future<String?> _downloadImage(String url) async {
@@ -37,7 +85,6 @@ class _PreviewImportScreenState extends State<PreviewImportScreen> {
       if (response.statusCode == 200) {
         final dir = await getApplicationDocumentsDirectory();
 
-        // Extract original file extension if available
         String fileExtension = '';
         final uri = Uri.parse(url);
         final pathSegments = uri.pathSegments;
@@ -45,16 +92,15 @@ class _PreviewImportScreenState extends State<PreviewImportScreen> {
           final lastSegment = pathSegments.last;
           final dotIndex = lastSegment.lastIndexOf('.');
           if (dotIndex != -1 && dotIndex < lastSegment.length - 1) {
-            fileExtension = lastSegment.substring(dotIndex); // Includes the dot
+            fileExtension = lastSegment.substring(dotIndex);
           }
         }
 
-        // Generate a unique filename using UUID and original extension
         final uniqueFilename = '${_uuid.v4()}$fileExtension';
         final file = File('${dir.path}/$uniqueFilename');
 
         await file.writeAsBytes(response.bodyBytes);
-        debugPrint('Image downloaded to: ${file.path}'); // Debug print
+        debugPrint('Image downloaded to: ${file.path}');
         return file.path;
       }
     } catch (e) {
@@ -73,22 +119,24 @@ class _PreviewImportScreenState extends State<PreviewImportScreen> {
 
     for (int i = 0; i < widget.items.length; i++) {
       var item = widget.items[i];
-      String? imagePath;
+      String? finalImagePath; // Use this for the actual item to be saved
 
-      if (item['imageUrl'] != null &&
+      // Check if image was downloaded during preview or if it's already a local path
+      if (_previewItems[i]['imagePath'] != null &&
+          File(_previewItems[i]['imagePath']).existsSync()) {
+        finalImagePath = _previewItems[i]['imagePath'];
+      } else if (item['imageUrl'] != null &&
           item['imageUrl'].toString().startsWith('http')) {
-        imagePath = await _downloadImage(item['imageUrl']);
-        if (imagePath != null) {
-          // Update the _previewItems with the local path for better preview feedback
-          _previewItems[i]['imagePath'] = imagePath;
-        }
+        // If for some reason it wasn't downloaded during preview (e.g., error),
+        // try to download it again during save. This is a fallback.
+        finalImagePath = await _downloadImage(item['imageUrl']);
       }
 
       final newItem = MemoryItem(
         question: item['question'] ?? '',
         answer: item['answer'] ?? '',
         category: widget.category,
-        imagePath: imagePath, // This is the local unique path
+        imagePath: finalImagePath, // This is the local unique path
       );
 
       await box.add(newItem);
@@ -120,13 +168,22 @@ class _PreviewImportScreenState extends State<PreviewImportScreen> {
                 itemCount: _previewItems.length,
                 itemBuilder: (context, index) {
                   final item = _previewItems[index];
+                  final downloadStatus = _imageDownloadStatus[index];
 
-                  Widget imageWidget;
-                  final String? localPath = item['imagePath'];
-                  final String? imageUrl = item['imageUrl'];
+                  Widget imageDisplayWidget;
+                  final String? localPath =
+                      item['imagePath']; // Path if downloaded
+                  final String? imageUrl = item['imageUrl']; // Original URL
 
-                  if (localPath != null && File(localPath).existsSync()) {
-                    imageWidget = Image.file(
+                  if (downloadStatus == 1) {
+                    // Image is currently downloading
+                    imageDisplayWidget = const Center(
+                      child: CircularProgressIndicator(strokeWidth: 2.0),
+                    );
+                  } else if (localPath != null &&
+                      File(localPath).existsSync()) {
+                    // Image is downloaded and file exists locally
+                    imageDisplayWidget = Image.file(
                       File(localPath),
                       width: 50,
                       height: 50,
@@ -138,7 +195,10 @@ class _PreviewImportScreenState extends State<PreviewImportScreen> {
                     );
                   } else if (imageUrl != null &&
                       imageUrl.toString().startsWith('http')) {
-                    imageWidget = Image.network(
+                    // Fallback to Image.network if not downloaded yet or failed,
+                    // or if it's the initial display before download starts.
+                    // This will also show its own loading indicator.
+                    imageDisplayWidget = Image.network(
                       imageUrl,
                       width: 50,
                       height: 50,
@@ -147,9 +207,23 @@ class _PreviewImportScreenState extends State<PreviewImportScreen> {
                       errorBuilder:
                           (context, error, stackTrace) =>
                               const Icon(Icons.broken_image, size: 50),
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Center(
+                          child: CircularProgressIndicator(
+                            value:
+                                loadingProgress.expectedTotalBytes != null
+                                    ? loadingProgress.cumulativeBytesLoaded /
+                                        loadingProgress.expectedTotalBytes!
+                                    : null,
+                            strokeWidth: 2.0,
+                          ),
+                        );
+                      },
                     );
                   } else {
-                    imageWidget = const Icon(
+                    // No image URL or local path found
+                    imageDisplayWidget = const Icon(
                       Icons.image_not_supported,
                       size: 50,
                     );
@@ -161,13 +235,11 @@ class _PreviewImportScreenState extends State<PreviewImportScreen> {
                       vertical: 5,
                     ),
                     child: ListTile(
-                      key: ValueKey(
-                        item['question'] + index.toString(),
-                      ), // A simple unique key for ListTile
+                      key: ValueKey(item['question'] + index.toString()),
                       leading: SizedBox(
                         width: 50,
                         height: 50,
-                        child: imageWidget,
+                        child: imageDisplayWidget, // Use the determined widget
                       ),
                       title: Text(item['question'] ?? ''),
                       subtitle: Text(item['answer'] ?? ''),

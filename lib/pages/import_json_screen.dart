@@ -104,7 +104,15 @@ class _ImportJsonScreenState extends State<ImportJsonScreen> {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        appBar: AppBar(title: const Text('استيراد JSON')),
+        appBar: AppBar(
+          title: const Text('استيراد JSON'),
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back),
+            onPressed: () {
+              Navigator.pushNamed(context, '/');
+            },
+          ),
+        ),
         body: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
