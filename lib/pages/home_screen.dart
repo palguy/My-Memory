@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:my_memory/models/backup_to_drive.dart';
 import 'package:my_memory/models/restore_from_drive.dart';
+import 'package:my_memory/pages/backup_restore_screen.dart';
 import 'package:my_memory/pages/import_json_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -93,6 +94,22 @@ class HomeScreen extends StatelessWidget {
                     ),
                   );
                 }
+              },
+            ),
+            //  backup
+            ListTile(
+              leading: const Icon(Icons.file_copy, color: Colors.white),
+              title: const Text(
+                'back up data',
+                style: TextStyle(color: Colors.white),
+              ),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const BackupRestoreScreen(),
+                  ),
+                );
               },
             ),
 

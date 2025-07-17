@@ -6,12 +6,26 @@ import 'package:my_memory/pages/home_screen.dart';
 import 'package:my_memory/pages/quiz_screen.dart';
 import 'package:my_memory/pages/view_saved_info_screen.dart';
 import 'models/memory_item.dart';
+import 'package:path_provider/path_provider.dart';
 
+late String hiveAppDirectory;
 void main() async {
   await Hive.initFlutter();
   Hive.registerAdapter(MemoryItemAdapter());
   await Hive.openBox<String>('categoriesBox'); // ⬅️ ضروري فتح box التصنيفات
   await Hive.openBox<MemoryItem>('memoryBox');
+  //  --    B A C K - UP -  DATA  --
+  WidgetsFlutterBinding.ensureInitialized();
+  // الحصول على مسار دليل المستندات للتطبيق
+  final appDocumentDir = await getApplicationDocumentsDirectory();
+  hiveAppDirectory = appDocumentDir.path; // حفظ المسار
+
+  // تهيئة Hive
+  // Hive.init(hiveAppDirectory); // Hive سيستخدم هذا الدليل
+  // Hive.registerAdapter(MemoryItemAdapter()); // تأكد من تسجيل المحول الخاص بك
+
+  // await Hive.openBox<MemoryItem>('memoryBox'); // افتح الصندوق
+
   runApp(const MyApp());
 }
 
